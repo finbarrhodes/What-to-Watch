@@ -1,0 +1,20 @@
+name: GRL_env
+channels:
+  - https://repo.anaconda.com/pkgs/main
+  - https://repo.anaconda.com/pkgs/r
+  - https://repo.anaconda.com/pkgs/msys2
+  - stellargraph
+  - defaults
+dependencies:
+  - python=3.9.6
+  - scikit-learn
+  - pandas
+  - matplotlib
+  - numpy
+  - dask
+  - seaborn
+  - scipy
+  - requests
+  - pip
+  - stellargraph
+  - tensorflow>=2.1,<2.12

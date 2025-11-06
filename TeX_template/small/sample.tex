@@ -1,0 +1,60 @@
+\documentclass[twoside,11pt]{article}
+
+% Any additional packages needed should be included after jmlr2e.
+% Note that jmlr2e.sty includes epsfig, amssymb, natbib and graphicx,
+% and defines many common macros, such as 'proof' and 'example'.
+%
+% It also sets the bibliographystyle to plainnat; for more information on
+% natbib citation styles, see the natbib documentation, a copy of which
+% is archived at http://www.jmlr.org/format/natbib.pdf
+
+%\usepackage{jmlr2e}
+\usepackage{jmlr2e_without_decorations}
+
+% Definitions of handy macros can go here
+
+\newcommand{\dataset}{{\cal D}}
+\newcommand{\fracpartial}[2]{\frac{\partial #1}{\partial  #2}}
+
+\firstpageno{1}
+\begin{document}
+
+\title{Learning with Mixtures of Trees}
+\author{\name Marina Meil\u{a} \email mmp@stat.washington.edu
+       \AND
+       \name Michael I.\ Jordan \email jordan@cs.berkeley.edu}
+
+\maketitle
+
+\begin{abstract}%   <- trailing '%' for backward compatibility of .sty file
+In an increasingly digital world of entertainment that relies heavily on the quality of the user experience, the ability for service providers to provide effective and relevent recommendations for users only follows suit. 
+Leveraging users' ratings of movies and information about the movies themselves in the graph space can provide highly tailored recommendations that when used in an end product, allow for better experiences for all users. 
+We present several graph based models that attempt to leverage movie ratings, genre information (and subsequent score) for movie recommendations, starting with foundational knowledge graph embedding approaches, and expanding to approaches that allow for more information to be incorporated in the graph, and thus, provide higher quality recommendations.  
+An addition novel to many approaches explored in the literature is the use of a 
+
+\end{abstract}
+
+\begin{keywords}
+  Bayesian Networks, Mixture Models, Chow-Liu Trees
+\end{keywords}
+
+\section{Introduction}
+
+Probabilistic inference has become a core technology in AI,
+largely due to developments in graph-theoretic methods for the 
+representation and manipulation of complex probability 
+distributions~\citep{pearl:88}.  Whether in their guise as 
+directed graphs (Bayesian networks) or as undirected graphs (Markov 
+random fields), \emph{probabilistic graphical models} have a number 
+of virtues as representations of uncertainty and as inference engines.  
+Graphical models allow a separation between qualitative, structural
+aspects of uncertain knowledge and the quantitative, parametric aspects 
+of uncertainty...\\
+
+{\noindent \em Remainder omitted in this sample. See http://www.jmlr.org/papers/ for full paper.}
+
+
+\vskip 0.2in
+\bibliography{sample}
+
+\end{document}

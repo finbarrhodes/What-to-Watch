@@ -1,0 +1,44 @@
+# Ignore Python bytecode files
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore .keras files
+*.keras
+
+# Ignore .json files
+*.json
+
+# Ignore .csv files
+*.csv
+
+# Ignore logs and other temporary files
+*.log
+*.tmp
+*.bak
+
+# Ignore IDE/editor specific files
+.vscode/
+.idea/
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore numpy files
+*.npy
+
+*.png
+*.jpg
+*.jpeg
+*.html
+*.htm
+*.dat
+
+# Ignore data folder (Mikhail)
+processed_data/
+
+*.h5
