@@ -1,76 +1,198 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/oj9h4yUK)
-﻿# ST457 - Graph Data Analytics and Representation Learning: Assignment 2 (2025, Spring)
+# What to Watch: Graph-Based Movie Recommendation System
 
-### Overall objective
+A movie recommendation system using heterogeneous graph neural networks (GNNs) to predict user preferences on the MovieLens 25M dataset. This project implements and compares multiple graph-based approaches including HinSAGE (Heterogeneous GraphSAGE) and Node2Vec for link prediction on user-movie bipartite graphs.
 
-This project is intended i) to assess your overall knowledge related to graphs/networks, specifically the concepts and techniques we discussed during the lectures and seminars, ii) to give you the opportunity to design a graph/network project on a topic of your choice, and iii) to allow you to work as a data science team.
+## Overview
 
-### Instructions
+Traditional recommendation systems often treat users and items as independent entities. This project leverages graph representation learning to capture the complex relationships between users and movies through a bipartite graph structure, where:
+- **Nodes** represent users and movies
+- **Edges** represent positive ratings (4+ stars)
+- **Node features** include movie metadata (genres, premiere year, genome scores)
 
-1. **GROUPS**: This is a group project, with 3-4 students. The group is expected to design a solid solution, with each member engaged uniformly (it is your responsibility to make sure that everybody is working towards the goal).
+The graph neural network learns embeddings that encode both the structural patterns in the user-movie interaction graph and the content features of movies.
 
-2. **TOPIC, SOFTWARE, DATA**: Choose a topic for which you want to design a graph/network-based solution. Make sure to identify good research questions and contributions that you can address. You can pick one of the following
+## Key Features
 
-    - reproduce a given study, based on a set of research papers, and add your own contributions and findings,
-    - design a graph/network-based solution for a particular problem and compare your approach to existing approaches for solving this problem.
+- **Heterogeneous Graph Neural Networks**: Implements HinSAGE for learning on bipartite user-movie graphs
+- **Multiple GNN Approaches**: Includes HinSAGE, Node2Vec, and baseline comparisons
+- **Rich Movie Features**: Incorporates genres, premiere years, and MovieLens genome scores (1,128 tag relevance scores)
+- **Comprehensive Evaluation**: NDCG, Recall, and MRR metrics at multiple cutoffs (k=3, 5, 10)
+- **Cold-Start Handling**: Separate evaluation pipeline for newly released movies
+- **Temporal Splitting**: Train/validation/test split based on rating timestamps to simulate real-world deployment
 
-    You can rely on existing software or library. There is no expectation that you will design a completely new approach, but you are supposed to show a good understanding and mastery of the techniques you chose, to propose potential improvements, and to discuss in detail their performance.
+## Dataset
 
-    Make sure that you identify a consistent set of real data to use in your application. You can also generate synthetic data in case you don't find real data. Also, you can use any existing dataset(s) and import these data into your project. Have a clear understanding of the data and use data of good quality/completeness. There is no need to investigate very large datasets.
+The project uses the [MovieLens 25M dataset](https://grouplens.org/datasets/movielens/25m/), which contains:
+- 25 million ratings from 162,000 users on 62,000 movies
+- Movie metadata (genres, release years)
+- Genome scores (relevance scores for 1,128 tags per movie)
 
-3. **WRITING**:
-Writing a paper in data science follows a 'standard' protocol. Familiarize yourself with the writing etiquette---if you have not yet done so---and apply it in your project report. Probably the most time-efficient way to absorb this style are works which obtained best paper award or were chosen to be oral presentation at top-tier conference venues ([NeurIPS](https://neurips.cc/), [ICML](https://icml.cc/), [AISTATS](https://aistats.org/aistats2024/), [UAI](https://www.auai.org/uai2024/)) or were published in [JMLR](https://jmlr.org/). Select a few past publications with this in mind, and observe how the authors
+### Data Processing Pipeline
 
-    1. justify the importance and challenges of the topic,
-    2. review related existing work in the literature, identify their shortcomings, and motivate the proposed solution,
-    3. summarize compactly their contributions and novelty,
-    4. make the document self-contained in terms of notations and definitions,
-    5. formulate the problem mathematically,
-    6. describe their solution, discuss the computational complexity,
-    7. present their benchmarks and preprocessing, detail the performance measures used, design and discuss in detail the experiments, compare with alternative methods,
-    8. point to the limitations of the work and motivate future research directions.
+1. **Filtering**: Keep active users (last rating in 2016+, 5-200 ratings) and popular movies (20+ ratings)
+2. **Rating Classification**: Binary classification (positive ≥4 stars, negative ≤2.5 stars)
+3. **Temporal Split**: 60% train / 20% validation / 20% test based on timestamps
+4. **Cold-Start Split**: 8% of newest movies reserved for cold-start evaluation
 
-    The structure of your paper should be:
+**Final Dataset Statistics:**
+- **Users**: 28,083
+- **Movies**: 4,057 (warm) + 352 (cold-start)
+- **Positive Ratings**: 1.5M (train: 896K, val: 291K, test: 325K)
 
-    - Introduction (bullet points i - ii - iii)
-    - Problem Formulation (iv - v)
-    - Proposed Solution (vi)
-    - Numerical Experiments (vii)
-    - Conclusions (viii)
+## Model Architecture
 
-### Deliverables
+### HinSAGE (Heterogeneous GraphSAGE)
 
-Your **solution** `MUST` contain a PDF document (i) with LSE candidate numbers (**no name please**), (ii) covering the points detailed under **WRITING**, (iii) with the guide in **TOPIC, SOFTWARE, DATA**.
+The core model uses a two-layer HinSAGE architecture:
 
-Reports should be written in [JMLR style](./TeX_template) and are restricted to **9 content pages** (including figures and tables), followed by arbitrary number of pages containing references. If you feel that the 9 content page limit is tight, then think through what the main points you want to make are. The [template](./TeX_template) folder contains both a minimal example (directory [small](./TeX_template/small)) and a larger example (directory [large](./TeX_template/large)). The template style of both directories is the same, but the [large](./TeX_template/large) version contains more examples on how to write formulas, include figures and tables, and a [template.bib](./TeX_template/large/BIB/template.bib) file to help you using a unified style for references. Do not alter the document style (such as font size, font type, margins, …). Your report/study should be well-structured, to-the-point, self-contained and reproducible.
+```
+Layer 1: Aggregate 1-hop neighbors (15 samples per node)
+Layer 2: Aggregate 2-hop neighbors (10 samples per node)
+Hidden dimensions: [32, 32]
+Link prediction: Inner product of user/movie embeddings → sigmoid
+```
 
-### Submission
+**Training Details:**
+- Optimizer: Adam (lr=1e-2)
+- Loss: Binary cross-entropy
+- Batch size: 256 user-movie pairs
+- Negative sampling: Hard negatives (observed poor ratings) + random unrated movies
+- Early stopping: 5 epochs patience on validation loss
 
-The submission should be done via GitHub and Moodle, as the previous assignment. Remember that this is a **2-step submission process**, and **both** steps must be completed **before the deadline**:
+## Results
 
-* submit a PDF file (containing your report) on the GitHub repository that is automatically created when you click on the assignment link. Please, make sure not to use any other repository. It is sufficient for one member per group to submit on Moodle, the other group members will automatically be shown as submitted.
-* submit the link to your GitHub repository through [Moodle](https://moodle.lse.ac.uk/mod/assign/view.php?id=1573218) (on Moodle, you can submit a .txt/.docx/.pdf file containing your GitHub link).
+The HinSAGE model achieves strong performance on the test set with a 9:1 negative-to-positive ratio:
 
-### Important dates (meant in London time)
+| Metric | @3 | @5 | @10 |
+|--------|-----|-----|------|
+| **NDCG** | 0.3803 | 0.3795 | 0.4174 |
+| **Recall** | 0.162 | 0.249 | 0.4141 |
+| **MRR** | 0.5391 | 0.5699 | 0.5835 |
 
-* Description of projectwork released: March 24, 2025.
-* Suggestions of project proposals via the [form](https://cryptpad.fr/form/#/2/form/view/bxX+4sHskcu618J5byPsLDNxylARVIpUFjqy0iTiVng/) and approval of projects (by Zoltan): between March 24 - April 7, 2025. You are welcome to submit your project proposal as soon as it is ready to minimize delays.
-* Projectwork starts: April 7, 2025 (4pm).
-* Submission of solution: May 6, 2025 (4pm).
+- **Accuracy**: 69.7%
+- **AUC**: 0.773
 
-### Marking criteria
+These results demonstrate the model's ability to rank truly relevant movies highly, with over 41% of actual positive ratings appearing in the top-10 recommendations.
 
-* This assignment is worth 80% of the final mark.
-* **IMPORTANT**: according to the School policy, you **must** submit an answer to this assignment; otherwise, you will be graded 0 (zero).
+## Project Structure
 
-| Problem breakdown  | Max marks |
-| ------------- | ------------- |
-| (1) Topic – importance and challenges of the chosen topic.  | 10 |
-| (2) Related work, motivation of the solution – review of existing related work, identification of gaps in available methods, motivation of the proposed approach. | 10 |
-| (3) Articulation of contributions – to-the-point contribution and novelty description. | 5 |
-| (4) Self-containedness – clear and self-contained notations and definitions.  | 10 |
-| (5) Problem formulation – mathematical problem formulation. | 15  |
-| (6) Solution – details of the solution, accompanied with time complexity. | 20 |
-| (7) Numerical experiments – in-depth presentation of benchmarks and preprocessing, careful design and discussion of the experiments. | 25 |
-| (8) Limitations, future work – identification of bottlenecks in the presented technique(s), motivation of future research. | 5 |
-| TOTAL  | 100  |
+```
+What-to-Watch/
+├── code/
+│   ├── HinSAGE.ipynb                  # Main HinSAGE implementation
+│   ├── node2vec_v2.ipynb              # Node2Vec baseline
+│   ├── multirelational_v1.ipynb       # Multi-relational experiments
+│   ├── create_datasets.ipynb          # Data preprocessing pipeline
+│   ├── explore_dataset.ipynb          # Exploratory data analysis
+│   ├── evaluation_functions.py        # NDCG, Recall, MRR metrics
+│   └── download_movielens_data.py     # Dataset download script
+├── raw_data/                          # MovieLens 25M dataset
+├── processed_data/                    # Train/val/test splits
+├── models/                            # Trained model weights
+├── environment_instructions.md        # Conda environment setup
+└── grl_env.yml                       # Conda environment specification
+```
+
+## Tech Stack
+
+- **Deep Learning**: TensorFlow 2.x, Keras
+- **Graph ML**: StellarGraph (heterogeneous GNN library)
+- **Data Processing**: Pandas, NumPy
+- **Evaluation**: scikit-learn
+- **Visualization**: Matplotlib
+
+## Setup
+
+### Prerequisites
+
+- Python 3.8+
+- Conda or Miniconda
+
+### Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/finbarrhodes/What-to-Watch.git
+cd What-to-Watch
+```
+
+2. Create and activate the conda environment:
+```bash
+conda env create -f grl_env.yml
+conda activate GRL_env
+```
+
+3. Download the MovieLens 25M dataset:
+```bash
+python code/download_movielens_data.py
+```
+
+4. Run the data preprocessing pipeline:
+```bash
+jupyter notebook code/create_datasets.ipynb
+```
+
+5. Train the HinSAGE model:
+```bash
+jupyter notebook code/HinSAGE.ipynb
+```
+
+## Usage
+
+### Training a Model
+
+The main HinSAGE model can be trained by running the `HinSAGE.ipynb` notebook, which:
+1. Loads preprocessed user-movie graph data
+2. Creates HinSAGE link generators for sampling subgraphs
+3. Trains the model with early stopping
+4. Evaluates on the test set with multiple metrics
+
+### Evaluation
+
+The evaluation pipeline computes ranking metrics for each user:
+- **NDCG@k**: Normalized discounted cumulative gain
+- **Recall@k**: Fraction of relevant items in top-k
+- **MRR@k**: Mean reciprocal rank of first relevant item
+
+Results are saved to `models/hinsage_results.json`.
+
+## Key Implementation Details
+
+### Heterogeneous Graph Construction
+
+The bipartite graph is constructed using StellarGraph:
+- **User nodes**: Single bias feature (constant=1)
+- **Movie nodes**: 1,148 features (genres one-hot + genome scores + normalized year)
+- **Edges**: Positive ratings only (negative ratings used for training sampling)
+
+### Negative Sampling Strategy
+
+For training and validation, negative samples are generated using a hybrid approach:
+1. **Hard negatives**: Movies the user rated poorly (≤2.5 stars)
+2. **Random negatives**: Unrated movies (if hard negatives insufficient)
+
+This ensures the model learns to distinguish between truly liked movies and both disliked and unknown movies.
+
+### Graph Sampling
+
+HinSAGE uses neighborhood sampling to create mini-batches:
+- Sample 15 neighbors at 1-hop distance
+- Sample 10 neighbors at 2-hop distance
+- This creates subgraphs with pattern: `user → movie → user` and `movie → user → movie`
+
+## Future Improvements
+
+- Implement attention mechanisms (e.g., GAT, HAN) for better neighbor aggregation
+- Add temporal dynamics to capture evolving user preferences
+- Incorporate social network information (user-user similarity)
+- Explore multi-task learning with rating prediction and ranking
+- Deploy as a REST API with real-time recommendations
+
+## License
+
+This project is available for educational and portfolio purposes.
+
+## Acknowledgments
+
+- MovieLens 25M dataset provided by [GroupLens Research](https://grouplens.org/)
+- Built with [StellarGraph](https://stellargraph.readthedocs.io/) library
